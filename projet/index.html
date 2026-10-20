@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Jeu de la balle</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Jeu de la balle</h1>
+  <p>Garde la touche <strong>Espace</strong> appuyée pour faire monter la balle !</p>
+  <div id="jeu">
+    <div class="nuage" style="top: 40px; animation-duration: 40s; animation-delay: -5s;"></div>
+    <div class="nuage" style="top: 110px; animation-duration: 55s; animation-delay: -30s;"></div>
+    <div class="nuage" style="top: 220px; animation-duration: 47s; animation-delay: -18s;"></div>
+    <div class="nuage" style="top: 160px; animation-duration: 62s; animation-delay: -45s;"></div>
+    <div class="nuage" style="top: 280px; animation-duration: 50s; animation-delay: -10s;"></div>
+    <div id="soleil">☀️</div>
+    <div id="lune">🌙</div>
+    <div id="balle"></div>
+    <div id="score">Score : 0</div>
+    <div id="message"></div>
+    <div id="pleure">😭</div>
+    <div id="accueil">
+      <h2>Bienvenue !</h2>
+      <button id="jouer">Jouer</button>
+    </div>
+    <button id="reglages" title="Paramètres">⚙</button>
+    <button id="restart">Restart</button>
+    <div id="panneau">
+      <h3>Paramètres</h3>
+      <div id="onglets">
+        <button id="tabGeneral" class="actif">Général</button>
+        <button id="tabApparence">Apparence</button>
+      </div>
+      <div id="ongletGeneral">
+      <p>
+        <label for="couleur">Couleur de la balle :</label><br>
+        <select id="couleur">
+          <option value="red">Rouge</option>
+          <option value="orange">Orange</option>
+          <option value="purple">Violet</option>
+          <option value="deeppink">Rose</option>
+          <option value="black">Noir</option>
+          <option value="blue">Bleu</option>
+          <option value="navy">Bleu foncé</option>
+          <option value="turquoise">Turquoise</option>
+          <option value="green">Vert</option>
+          <option value="limegreen">Vert clair</option>
+          <option value="yellow">Jaune</option>
+          <option value="gold">Doré</option>
+          <option value="brown">Marron</option>
+          <option value="gray">Gris</option>
+          <option value="white">Blanc</option>
+          <option value="magenta">Magenta</option>
+          <option value="crimson">Cramoisi</option>
+          <option value="coral">Corail</option>
+          <option value="teal">Bleu canard</option>
+        </select>
+      </p>
+      <p>
+        <button id="musique">Musique drôle : NON</button>
+      </p>
+      </div>
+      <div id="ongletApparence">
+        <p>
+          <label for="apparence">Apparence de la balle :</label><br>
+          <select id="apparence">
+            <option value="">Balle</option>
+            <option value="🦆">Canard</option>
+            <option value="🐷">Cochon</option>
+            <option value="🐔">Poule</option>
+            <option value="🙂">Tête d'humain</option>
+          </select>
+        </p>
+      </div>
+      <button id="fermer">Fermer</button>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,432 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #eef6ff;
+}
+
+#jeu {
+  position: relative;
+  width: 700px;
+  height: 500px;
+  margin: 20px auto;
+  background: linear-gradient(#0d2a6b, #87ceeb);
+  border: 3px solid #333;
+  overflow: hidden;
+}
+
+#balle {
+  position: absolute;
+  left: 50px;
+  bottom: 0;
+  width: 30px;
+  height: 30px;
+  background: red;
+  border-radius: 50%;
+}
+
+.obstacle {
+  position: absolute;
+  width: 30px;
+  height: 130px;
+  background: #2e7d32;
+}
+
+#message {
+  position: absolute;
+  top: 200px;
+  width: 100%;
+  font-size: 22px;
+  font-weight: bold;
+  color: #b71c1c;
+}
+
+.nuage {
+  position: absolute;
+  width: 70px;
+  height: 24px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 15px -10px 0 4px white, 35px -4px 0 2px white;
+}
+
+#accueil {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(135, 206, 235, 0.9);
+  z-index: 10;
+}
+
+#accueil h2 {
+  margin-top: 150px;
+  font-size: 32px;
+}
+
+#parametres {
+  margin: 25px 0;
+}
+
+#jouer {
+  background: #2e9e3e;
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+  padding: 10px 40px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+#jouer:hover {
+  background: #247d31;
+}
+
+#reglages {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 20;
+  font-size: 24px;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+}
+
+#panneau {
+  display: none;
+  position: absolute;
+  top: 60px;
+  left: 10px;
+  width: 230px;
+  padding: 10px;
+  background: white;
+  border: 2px solid #333;
+  border-radius: 10px;
+  z-index: 30;
+}
+
+#panneau h3 {
+  margin: 0 0 10px;
+}
+
+#panneau button {
+  font-size: 16px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+#score {
+  position: absolute;
+  top: 12px;
+  right: 15px;
+  z-index: 5;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+.fusee {
+  position: absolute;
+  width: 40px;
+  height: 24px;
+  font-size: 30px;
+  line-height: 24px;
+  transform: rotate(-135deg);
+}
+
+#pleure {
+  display: none;
+  position: absolute;
+  top: 250px;
+  width: 100%;
+  font-size: 90px;
+  z-index: 5;
+}
+
+#restart {
+  position: absolute;
+  top: 8px;
+  left: 58px;
+  z-index: 20;
+  height: 42px;
+  padding: 0 14px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 21px;
+  background: white;
+  cursor: pointer;
+}
+
+#lune {
+  display: none;
+  position: absolute;
+  top: 60px;
+  right: 80px;
+  font-size: 60px;
+}
+
+#jeu.nuit {
+  background: linear-gradient(#0b1030, #2a3a7a);
+}
+
+#jeu.nuit .nuage {
+  display: none;
+}
+
+#jeu.nuit #lune {
+  display: block;
+}
+
+#jeu.nuit #score {
+  color: white;
+}
+
+.etoile {
+  display: none;
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+}
+
+#jeu.nuit .etoile {
+  display: block;
+}
+
+#reglages {
+  transition: transform 0.6s;
+}
+
+#reglages.ouvert {
+  transform: rotate(360deg);
+}
+
+#panneau {
+  animation: apparition 0.3s;
+}
+
+@keyframes apparition {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#onglets {
+  margin-bottom: 10px;
+}
+
+#onglets button {
+  border: 1px solid #333;
+  background: #eee;
+  font-size: 14px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+#onglets button.actif {
+  background: #87ceeb;
+  font-weight: bold;
+}
+
+#ongletApparence {
+  display: none;
+}
+
+#balle.emoji {
+  background: transparent !important;
+  font-size: 28px;
+  line-height: 30px;
+  text-align: center;
+}
+
+/* ailes de la balle (pour toutes les apparences) */
+#balle {
+  z-index: 1;
+}
+
+#balle::before,
+#balle::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  width: 24px;
+  height: 14px;
+  background: white;
+  border: 2px solid #999;
+  border-radius: 50%;
+  z-index: -1;
+}
+
+#balle::before {
+  left: -20px;
+  transform-origin: right center;
+  animation: aile-gauche 0.4s ease-in-out infinite alternate;
+}
+
+#balle::after {
+  right: -20px;
+  transform-origin: left center;
+  animation: aile-droite 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes aile-gauche {
+  from { transform: rotate(-25deg); }
+  to { transform: rotate(25deg); }
+}
+
+@keyframes aile-droite {
+  from { transform: rotate(25deg); }
+  to { transform: rotate(-25deg); }
+}
+
+.mouche {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  font-size: 22px;
+  line-height: 26px;
+  text-align: center;
+}
+
+/* police du score plus fun */
+#score {
+  font-family: "Comic Sans MS", "Chalkboard SE", "Bradley Hand", cursive;
+  font-size: 30px;
+  color: #ffd600;
+  text-shadow: 2px 2px 0 #d81b60, 4px 4px 0 #333;
+  letter-spacing: 1px;
+}
+
+#jeu.nuit #score {
+  color: #ffd600;
+}
+
+/* ville : immeubles avec des fenêtres */
+.immeuble {
+  position: absolute;
+  bottom: 0;
+  background-color: #90caf9; /* couleur des fenêtres (jour) */
+  background-image:
+    linear-gradient(90deg, var(--mur) 0 6px, transparent 6px),
+    linear-gradient(var(--mur) 0 8px, transparent 8px);
+  background-size: 12px 100%, 100% 16px;
+  background-position: 3px 0, 0 4px;
+  background-repeat: repeat-x, repeat-y;
+}
+
+#jeu.nuit .immeuble {
+  background-color: #ffe082; /* fenêtres allumées la nuit */
+}
+
+/* nuages qui avancent lentement vers la gauche */
+.nuage {
+  left: 0;
+  animation-name: nuage-defile;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes nuage-defile {
+  from { transform: translateX(720px); }
+  to { transform: translateX(-130px); }
+}
+
+/* soleil : il se couche derrière la ville quand la nuit arrive */
+#soleil {
+  position: absolute;
+  top: 70px;
+  right: 120px;
+  font-size: 60px;
+  transition: transform 2.5s ease-in, opacity 2.5s ease-in;
+}
+
+#jeu.nuit #soleil {
+  transform: translateY(400px);
+  opacity: 0;
+}
+
+/* la ville défile vers la gauche */
+.ville {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1400px;
+  height: 100%;
+  animation: ville-defile 20s linear infinite;
+}
+
+@keyframes ville-defile {
+  from { transform: translateX(0); }
+  to { transform: translateX(-700px); }
+}
+
+/* les obstacles sont des piques (triangles) */
+.obstacle {
+  width: 44px;
+  clip-path: polygon(50% 0, 0 100%, 100% 100%);
+}
+
+.obstacle.haut {
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+/* le volet des paramètres descend avec un petit rebond */
+#panneau {
+  animation: volet-descend 0.6s ease-out;
+}
+
+@keyframes volet-descend {
+  0% { opacity: 0; transform: translateY(-200px); }
+  60% { opacity: 1; transform: translateY(12px); }
+  80% { transform: translateY(-5px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* immeubles en 3D : un côté sombre et un toit clair */
+.immeuble::before,
+.immeuble::after {
+  content: "";
+  position: absolute;
+}
+
+/* toit */
+.immeuble::before {
+  top: -14px;
+  left: 0;
+  width: 100%;
+  height: 14px;
+  transform-origin: left bottom;
+  transform: skewX(-45deg);
+  background: linear-gradient(rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.35)), var(--mur);
+}
+
+/* côté droit */
+.immeuble::after {
+  top: 0;
+  left: 100%;
+  width: 14px;
+  height: 100%;
+  transform-origin: left top;
+  transform: skewY(-45deg);
+  background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), var(--mur);
+}
+
+/* police du message quand on a perdu */
+#message {
+  font-family: Impact, "Arial Black", fantasy;
+  font-size: 34px;
+  font-weight: normal;
+  letter-spacing: 2px;
+  color: #e53935;
+  text-shadow: 2px 2px 0 white, 4px 4px 0 #333;
+}
