@@ -7,7 +7,6 @@
 </head>
 <body>
   <h1>Jeu de la balle</h1>
-  <p>Garde la touche <strong>Espace</strong> appuyée pour faire monter la balle !</p>
   <div id="jeu">
     <div class="nuage" style="top: 40px; animation-duration: 40s; animation-delay: -5s;"></div>
     <div class="nuage" style="top: 110px; animation-duration: 55s; animation-delay: -30s;"></div>
@@ -18,19 +17,32 @@
     <div id="lune">🌙</div>
     <div id="balle"></div>
     <div id="score">Score : 0</div>
+    <div id="meilleur">Meilleur : 0</div>
+    <div id="aide"></div>
+    <div id="vies"></div>
+    <div id="munitions"></div>
     <div id="message"></div>
     <div id="pleure">😭</div>
     <div id="accueil">
-      <h2>Bienvenue !</h2>
-      <button id="jouer">Jouer</button>
+      <div id="menuPrincipal">
+        <h2>Bienvenue !</h2>
+        <button id="jouer">Jouer</button>
+        <button id="boutonParametres">Paramètres</button>
+      </div>
+      <div id="niveaux">
+        <h2>Choisis ton niveau</h2>
+        <button class="niveau facile" data-vies="3">Facile ❤️❤️❤️</button>
+        <button class="niveau normal" data-vies="2">Normal ❤️❤️</button>
+        <button class="niveau impossible" data-vies="1">Impossible ❤️</button>
+      </div>
     </div>
-    <button id="reglages" title="Paramètres">⚙</button>
-    <button id="restart">Restart</button>
     <div id="panneau">
       <h3>Paramètres</h3>
       <div id="onglets">
         <button id="tabGeneral" class="actif">Général</button>
         <button id="tabApparence">Apparence</button>
+        <button id="tabTouches">Touches</button>
+        <button id="tabRegles">Règles</button>
       </div>
       <div id="ongletGeneral">
       <p>
@@ -60,6 +72,13 @@
       <p>
         <button id="musique">Musique drôle : NON</button>
       </p>
+      <p>
+        <button id="musiqueAction">Musique action : NON</button>
+      </p>
+      <p>
+        <label for="volume">Volume de la musique :</label><br>
+        <input type="range" id="volume" min="0" max="100" value="25">
+      </p>
       </div>
       <div id="ongletApparence">
         <p>
@@ -72,6 +91,30 @@
             <option value="🙂">Tête d'humain</option>
           </select>
         </p>
+      </div>
+      <div id="ongletTouches">
+        <p>Clique sur une touche, puis appuie sur la nouvelle touche.</p>
+        <p>Monter : <button class="changerTouche" data-action="monter"></button></p>
+        <p>Pause : <button class="changerTouche" data-action="pause"></button></p>
+        <p>Plein écran : <button class="changerTouche" data-action="pleinEcran"></button></p>
+        <p>Bulles : <button class="changerTouche" data-action="tirer"></button></p>
+        <p>Restart : <button class="changerTouche" data-action="restart"></button></p>
+      </div>
+      <div id="ongletRegles">
+        <ul>
+          <li>Garde la touche <strong class="nomAction" data-action="monter"></strong> appuyée pour monter. Relâche-la pour descendre.</li>
+          <li>Ne touche pas le sol, le plafond ni les obstacles.</li>
+          <li>Chaque obstacle esquivé donne 1 point.</li>
+          <li>Une pièce 🪙 attrapée donne 3 points.</li>
+          <li>Les fusées 🚀 vont très vite : fais attention !</li>
+          <li>Facile : 3 vies. Normal : 2 vies. Impossible : 1 vie.</li>
+          <li>Tous les 10 points, le jour et la nuit changent.</li>
+          <li>À 20 points : le désert arrive, les piques deviennent des serpents 🐍 et les fusées des abeilles 🐝.</li>
+          <li>À 20 points, tu as 5 bulles 🫧. Touche <strong class="nomAction" data-action="tirer"></strong> pour en lancer une et faire éclater un obstacle.</li>
+          <li>À 50 points : une ville futuriste pleine de néons arrive !</li>
+          <li>À 100 points : un trou apparaît. Tu as gagné !</li>
+          <li>Pause : <strong class="nomAction" data-action="pause"></strong>. Plein écran : <strong class="nomAction" data-action="pleinEcran"></strong>. Restart : <strong class="nomAction" data-action="restart"></strong>.</li>
+        </ul>
       </div>
       <button id="fermer">Fermer</button>
     </div>

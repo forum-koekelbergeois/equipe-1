@@ -22,6 +22,25 @@ let perdu = false;
 let commence = false;
 let idAnimation = null;
 
+// paillettes qui brillent dans le menu d'accueil
+for (let i = 0; i < 30; i++) {
+  const paillette = document.createElement("div");
+  paillette.className = "paillette";
+  const taille = 8 + Math.floor(Math.random() * 16);
+  paillette.style.width = taille + "px";
+  paillette.style.height = taille + "px";
+  paillette.style.left = Math.random() * 95 + "%";
+  paillette.style.top = Math.random() * 95 + "%";
+  paillette.style.animationDelay = "-" + Math.random() * 1.5 + "s";
+  paillette.style.animationDuration = 1 + Math.random() * 1.5 + "s";
+  document.getElementById("accueil").appendChild(paillette);
+}
+
+// meilleur score gardé dans le navigateur (même après avoir quitté la page)
+const affichageMeilleur = document.getElementById("meilleur");
+let meilleur = Number(localStorage.getItem("meilleurScore")) || 0;
+affichageMeilleur.textContent = "Meilleur : " + meilleur;
+
 const accueil = document.getElementById("accueil");
 const choixCouleur = document.getElementById("couleur");
 
@@ -32,7 +51,7 @@ choixCouleur.addEventListener("change", function () {
 
 // --- Menu paramètres ---
 const panneau = document.getElementById("panneau");
-const boutonReglages = document.getElementById("reglages");
+const boutonReglages = document.getElementById("boutonParametres");
 const boutonMusique = document.getElementById("musique");
 
 boutonReglages.addEventListener("click", function () {
@@ -53,22 +72,73 @@ const ongletApparence = document.getElementById("ongletApparence");
 const tabGeneral = document.getElementById("tabGeneral");
 const tabApparence = document.getElementById("tabApparence");
 
-function montrerOnglet(general) {
-  ongletGeneral.style.display = general ? "block" : "none";
-  ongletApparence.style.display = general ? "none" : "block";
-  tabGeneral.classList.toggle("actif", general);
-  tabApparence.classList.toggle("actif", !general);
+const ongletTouches = document.getElementById("ongletTouches");
+const tabTouches = document.getElementById("tabTouches");
+
+const onglets = {
+  general: [tabGeneral, ongletGeneral],
+  apparence: [tabApparence, ongletApparence],
+  touches: [tabTouches, ongletTouches],
+  regles: [document.getElementById("tabRegles"), document.getElementById("ongletRegles")],
+};
+
+function montrerOnglet(nom) {
+  for (const cle in onglets) {
+    const actif = cle === nom;
+    onglets[cle][0].classList.toggle("actif", actif);
+    onglets[cle][1].style.display = actif ? "block" : "none";
+  }
 }
 
-tabGeneral.addEventListener("click", function () {
-  tabGeneral.blur();
-  montrerOnglet(true);
-});
+for (const cle in onglets) {
+  onglets[cle][0].addEventListener("click", function () {
+    this.blur();
+    montrerOnglet(cle);
+  });
+}
 
-tabApparence.addEventListener("click", function () {
-  tabApparence.blur();
-  montrerOnglet(false);
-});
+// --- Touches du clavier (on peut les changer dans l'onglet Touches) ---
+const touchesParDefaut = { monter: " ", pause: "a", pleinEcran: "f", tirer: "z", restart: "r" };
+let touches = Object.assign({}, touchesParDefaut, JSON.parse(localStorage.getItem("touches") || "{}"));
+let actionEnAttente = null; // l'action dont on change la touche
+
+function nomTouche(touche) {
+  return touche === " " ? "Espace" : touche.toUpperCase();
+}
+
+function majNomsTouches() {
+  for (const bouton of document.querySelectorAll(".changerTouche")) {
+    const action = bouton.dataset.action;
+    bouton.textContent = action === actionEnAttente ? "Appuie..." : nomTouche(touches[action]);
+  }
+  // les touches écrites dans les règles
+  for (const nom of document.querySelectorAll(".nomAction")) {
+    nom.textContent = nomTouche(touches[nom.dataset.action]);
+  }
+}
+
+for (const bouton of document.querySelectorAll(".changerTouche")) {
+  bouton.addEventListener("click", function () {
+    this.blur();
+    actionEnAttente = this.dataset.action;
+    majNomsTouches();
+  });
+}
+
+// la nouvelle touche est choisie : si une autre action l'avait, on échange
+function choisirTouche(touche) {
+  if (touche !== "escape") {
+    for (const action in touches) {
+      if (touches[action] === touche) touches[action] = touches[actionEnAttente];
+    }
+    touches[actionEnAttente] = touche;
+    localStorage.setItem("touches", JSON.stringify(touches));
+  }
+  actionEnAttente = null;
+  majNomsTouches();
+}
+
+majNomsTouches();
 
 // --- Apparence de la balle ---
 const choixApparence = document.getElementById("apparence");
@@ -85,12 +155,29 @@ let contexteSon = null;
 let minuteurMusique = null;
 let numeroNote = 0;
 
+// volume réglé avec la barre dans les paramètres (de 0 à 0.2)
+const choixVolume = document.getElementById("volume");
+let volumeMusique = Number(choixVolume.value) / 100 * 0.2;
+
+choixVolume.addEventListener("input", function () {
+  volumeMusique = Number(choixVolume.value) / 100 * 0.2;
+});
+
+// après avoir réglé le volume, la barre espace ne doit pas rester sélectionnée
+choixVolume.addEventListener("change", function () {
+  choixVolume.blur();
+});
+
 function jouerNote() {
+  if (volumeMusique === 0) {
+    numeroNote = (numeroNote + 1) % notes.length;
+    return;
+  }
   const oscillateur = contexteSon.createOscillator();
   const volume = contexteSon.createGain();
   oscillateur.type = "square";
   oscillateur.frequency.value = notes[numeroNote];
-  volume.gain.setValueAtTime(0.05, contexteSon.currentTime);
+  volume.gain.setValueAtTime(volumeMusique, contexteSon.currentTime);
   volume.gain.exponentialRampToValueAtTime(0.001, contexteSon.currentTime + 0.18);
   oscillateur.connect(volume);
   volume.connect(contexteSon.destination);
@@ -99,29 +186,233 @@ function jouerNote() {
   numeroNote = (numeroNote + 1) % notes.length;
 }
 
+function arreterMusiqueDrole() {
+  clearInterval(minuteurMusique);
+  minuteurMusique = null;
+  boutonMusique.textContent = "Musique drôle : NON";
+}
+
 boutonMusique.addEventListener("click", function () {
   boutonMusique.blur();
   if (minuteurMusique === null) {
+    arreterMusiqueAction(); // une seule musique à la fois
     if (contexteSon === null) contexteSon = new AudioContext();
     contexteSon.resume();
     minuteurMusique = setInterval(jouerNote, 220);
     boutonMusique.textContent = "Musique drôle : OUI";
   } else {
-    clearInterval(minuteurMusique);
-    minuteurMusique = null;
-    boutonMusique.textContent = "Musique drôle : NON";
+    arreterMusiqueDrole();
   }
 });
 
-document.getElementById("jouer").addEventListener("click", function () {
-  this.blur();
-  accueil.style.display = "none";
-  commence = true;
-  jouer();
+// --- Musique action : rapide, avec basse, mélodie et grosse caisse ---
+const basseAction = [110, 110, 131, 110, 147, 110, 165, 147, 110, 110, 131, 110, 98, 98, 123, 131];
+const melodieAction = [440, 523, 659, 523, 440, 523, 784, 659, 440, 523, 659, 523, 392, 494, 587, 494];
+const boutonAction = document.getElementById("musiqueAction");
+let minuteurAction = null;
+let pasAction = 0;
+
+function jouerSon(type, frequence, duree, force) {
+  const oscillateur = contexteSon.createOscillator();
+  const volume = contexteSon.createGain();
+  oscillateur.type = type;
+  oscillateur.frequency.value = frequence;
+  volume.gain.setValueAtTime(force, contexteSon.currentTime);
+  volume.gain.exponentialRampToValueAtTime(0.001, contexteSon.currentTime + duree);
+  oscillateur.connect(volume);
+  volume.connect(contexteSon.destination);
+  oscillateur.start();
+  oscillateur.stop(contexteSon.currentTime + duree + 0.02);
+}
+
+function jouerPasAction() {
+  if (volumeMusique > 0) {
+    jouerSon("sawtooth", basseAction[pasAction], 0.13, volumeMusique * 1.2);
+    jouerSon("square", melodieAction[pasAction], 0.1, volumeMusique * 0.6);
+    // grosse caisse : un son grave qui descend, sur chaque temps
+    if (pasAction % 4 === 0) {
+      const oscillateur = contexteSon.createOscillator();
+      const volume = contexteSon.createGain();
+      oscillateur.frequency.setValueAtTime(150, contexteSon.currentTime);
+      oscillateur.frequency.exponentialRampToValueAtTime(40, contexteSon.currentTime + 0.12);
+      volume.gain.setValueAtTime(volumeMusique * 2, contexteSon.currentTime);
+      volume.gain.exponentialRampToValueAtTime(0.001, contexteSon.currentTime + 0.15);
+      oscillateur.connect(volume);
+      volume.connect(contexteSon.destination);
+      oscillateur.start();
+      oscillateur.stop(contexteSon.currentTime + 0.17);
+    }
+  }
+  pasAction = (pasAction + 1) % basseAction.length;
+}
+
+function arreterMusiqueAction() {
+  clearInterval(minuteurAction);
+  minuteurAction = null;
+  boutonAction.textContent = "Musique action : NON";
+}
+
+boutonAction.addEventListener("click", function () {
+  boutonAction.blur();
+  if (minuteurAction === null) {
+    arreterMusiqueDrole(); // une seule musique à la fois
+    if (contexteSon === null) contexteSon = new AudioContext();
+    contexteSon.resume();
+    minuteurAction = setInterval(jouerPasAction, 120);
+    boutonAction.textContent = "Musique action : OUI";
+  } else {
+    arreterMusiqueAction();
+  }
 });
 
+// --- Niveaux et vies ---
+const menuPrincipal = document.getElementById("menuPrincipal");
+const menuNiveaux = document.getElementById("niveaux");
+const affichageVies = document.getElementById("vies");
+let viesMax = 3;
+let vies = 3;
+let invincible = 0; // images pendant lesquelles on ne peut pas perdre
+
+function majVies() {
+  affichageVies.textContent = "❤️".repeat(vies) + "🖤".repeat(viesMax - vies);
+}
+
+// l'accueil montre d'abord « Jouer », puis le choix du niveau
+function montrerAccueil() {
+  menuPrincipal.style.display = "block";
+  menuNiveaux.style.display = "none";
+  accueil.style.display = "block";
+}
+
+document.getElementById("jouer").addEventListener("click", function () {
+  this.blur();
+  menuPrincipal.style.display = "none";
+  menuNiveaux.style.display = "block";
+});
+
+for (const bouton of document.querySelectorAll(".niveau")) {
+  bouton.addEventListener("click", function () {
+    this.blur();
+    viesMax = Number(this.dataset.vies);
+    accueil.style.display = "none";
+    remiseAZero();
+    montrerAide();
+  });
+}
+
+// pendant 5 secondes, on voit les touches, puis la partie commence
+const aide = document.getElementById("aide");
+let minuteurAide = null;
+
+function montrerAide() {
+  aide.textContent = "";
+  const titre = document.createElement("h2");
+  titre.textContent = "Les touches";
+  aide.appendChild(titre);
+  const lignes = [
+    ["Monter", touches.monter],
+    ["Bulles (à 20 points)", touches.tirer],
+    ["Pause", touches.pause],
+    ["Plein écran", touches.pleinEcran],
+    ["Restart", touches.restart],
+  ];
+  for (const ligne of lignes) {
+    const p = document.createElement("p");
+    p.textContent = ligne[0] + " : " + nomTouche(ligne[1]);
+    aide.appendChild(p);
+  }
+  const compte = document.createElement("p");
+  compte.className = "compte";
+  aide.appendChild(compte);
+  let reste = 5;
+  compte.textContent = "Début dans " + reste;
+  aide.style.display = "block";
+  minuteurAide = setInterval(function () {
+    reste = reste - 1;
+    if (reste > 0) {
+      compte.textContent = "Début dans " + reste;
+      return;
+    }
+    arreterAide();
+    commence = true;
+    jouer();
+  }, 1000);
+}
+
+function arreterAide() {
+  clearInterval(minuteurAide);
+  minuteurAide = null;
+  aide.style.display = "none";
+}
+
+// --- Pause avec la touche A ---
+let enPause = false;
+
+let minuteurReprise = null;
+
+function basculerPause() {
+  if (!commence || perdu) return;
+  // pendant le compte à rebours, on ne fait rien
+  if (minuteurReprise !== null) return;
+  if (!enPause) {
+    enPause = true;
+    jeu.classList.add("pause");
+    cancelAnimationFrame(idAnimation);
+    message.textContent = "Pause (appuie sur " + nomTouche(touches.pause) + " pour reprendre)";
+  } else {
+    // on reprend après 3 secondes : 3, 2, 1
+    let reste = 3;
+    message.textContent = "Reprise dans " + reste;
+    minuteurReprise = setInterval(function () {
+      reste = reste - 1;
+      if (reste > 0) {
+        message.textContent = "Reprise dans " + reste;
+        return;
+      }
+      clearInterval(minuteurReprise);
+      minuteurReprise = null;
+      enPause = false;
+      jeu.classList.remove("pause");
+      message.textContent = "";
+      jouer();
+    }, 1000);
+  }
+}
+
+// --- Plein écran avec la touche F ---
+function majPleinEcran() {
+  const plein = document.fullscreenElement !== null;
+  document.body.classList.toggle("plein", plein);
+  // on agrandit le jeu pour remplir l'écran
+  const echelle = Math.min(window.innerWidth / largeurJeu, window.innerHeight / hauteurJeu);
+  document.body.style.setProperty("--echelle", echelle);
+}
+
+function basculerPleinEcran() {
+  if (document.fullscreenElement === null) {
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+document.addEventListener("fullscreenchange", majPleinEcran);
+window.addEventListener("resize", majPleinEcran);
+
 document.addEventListener("keydown", function (e) {
-  if (e.code === "Space" && commence) {
+  // e.key suit la lettre écrite sur la touche (marche en AZERTY)
+  const touche = e.key.toLowerCase();
+  // on est en train de choisir une nouvelle touche
+  if (actionEnAttente !== null) {
+    e.preventDefault();
+    if (touche !== "shift" && touche !== "control" && touche !== "alt") choisirTouche(touche);
+    return;
+  }
+  if (touche === touches.pleinEcran && !e.repeat) basculerPleinEcran();
+  if (touche === touches.tirer && !e.repeat) tirer();
+  if (touche === touches.pause && !e.repeat) basculerPause();
+  if (touche === touches.restart && !e.repeat && (commence || minuteurAide !== null)) retourAccueil();
+  if (touche === touches.monter && commence) {
     toucheAppuyee = true;
     e.preventDefault();
     if (perdu) recommencer();
@@ -129,7 +420,7 @@ document.addEventListener("keydown", function (e) {
 });
 
 document.addEventListener("keyup", function (e) {
-  if (e.code === "Space") {
+  if (e.key.toLowerCase() === touches.monter) {
     toucheAppuyee = false;
   }
 });
@@ -142,9 +433,15 @@ function creerObstacle() {
   // taille au hasard entre 120 et 340 (les grands bloquent le milieu)
   const hauteurObstacle = 120 + Math.random() * 220;
   element.style.height = hauteurObstacle + "px";
-  // gris au hasard (clair, moyen ou foncé)
-  const couleurs = ["#9e9e9e", "#757575", "#616161", "#bdbdbd"];
-  element.style.background = couleurs[Math.floor(Math.random() * couleurs.length)];
+  if (score >= 20) {
+    // à partir de 20 points, les piques deviennent des serpents
+    element.classList.add("serpent");
+    element.textContent = "🐍";
+  } else {
+    // gris au hasard (clair, moyen ou foncé)
+    const couleurs = ["#9e9e9e", "#757575", "#616161", "#bdbdbd"];
+    element.style.background = couleurs[Math.floor(Math.random() * couleurs.length)];
+  }
   if (enHaut) {
     element.classList.add("haut"); // pique qui pointe vers le bas
     element.style.top = "0px";
@@ -167,9 +464,15 @@ let fusees = [];
 function creerFusee() {
   const element = document.createElement("div");
   element.className = "fusee";
-  element.textContent = "🚀";
-  // couleur au hasard
-  element.style.filter = "hue-rotate(" + Math.floor(Math.random() * 360) + "deg)";
+  if (score >= 20) {
+    // à partir de 20 points, les fusées deviennent des abeilles
+    element.textContent = "🐝";
+    element.classList.add("abeille");
+  } else {
+    element.textContent = "🚀";
+    // couleur au hasard
+    element.style.filter = "hue-rotate(" + Math.floor(Math.random() * 360) + "deg)";
+  }
   // hauteur au hasard
   const y = 20 + Math.random() * (hauteurJeu - 80);
   element.style.bottom = y + "px";
@@ -177,14 +480,14 @@ function creerFusee() {
   fusees.push({ element: element, x: largeurJeu, y: y });
 }
 
-// --- Mouche bonus : l'attraper donne 3 points ---
+// --- Pièce bonus (ancienne mouche) : l'attraper donne 3 points ---
 const tailleMouche = 26;
 let mouches = [];
 
 function creerMouche() {
   const element = document.createElement("div");
   element.className = "mouche";
-  element.textContent = "🪰";
+  element.textContent = "🪙";
   jeu.appendChild(element);
   const y = 60 + Math.random() * (hauteurJeu - 160);
   mouches.push({ element: element, x: largeurJeu, y: y, y0: y, t: 0 });
@@ -239,6 +542,32 @@ for (const immeuble of Array.from(ville.children)) {
   ville.appendChild(copie);
 }
 
+// la route, devant les immeubles et derrière les voitures
+const route = document.createElement("div");
+route.className = "route";
+jeu.insertBefore(route, balle);
+
+// voitures qui roulent dans la ville (devant les immeubles)
+const modelesVoitures = ["🚗", "🚕", "🚙", "🚌", "🚓"];
+for (let i = 0; i < 5; i++) {
+  const voiture = document.createElement("div");
+  voiture.className = "voiture";
+  voiture.textContent = modelesVoitures[i];
+  voiture.style.bottom = (i % 2) * 14 + "px";
+  voiture.style.animationDuration = 8 + Math.floor(Math.random() * 8) + "s";
+  voiture.style.animationDelay = "-" + i * 3 + "s";
+  jeu.insertBefore(voiture, balle);
+}
+
+// cactus du désert (cachés tant qu'on n'a pas 20 points)
+for (let i = 0; i < 4; i++) {
+  const cactus = document.createElement("div");
+  cactus.className = "cactus";
+  cactus.textContent = "🌵";
+  cactus.style.animationDelay = "-" + i * 5 + "s";
+  jeu.insertBefore(cactus, balle);
+}
+
 // étoiles (visibles seulement la nuit), placées au hasard derrière la balle
 for (let i = 0; i < 40; i++) {
   const etoile = document.createElement("div");
@@ -255,6 +584,11 @@ for (let i = 0; i < 40; i++) {
 function majNuit() {
   const nuit = Math.floor(score / 10) % 2 === 1;
   jeu.classList.toggle("nuit", nuit);
+  // de 20 à 49 points, la ville devient le désert
+  jeu.classList.toggle("desert", score >= 20 && score < 50);
+  // à partir de 50 points, c'est une ville futuriste
+  jeu.classList.toggle("futur", score >= 50);
+  majMunitions();
 }
 
 function remiseAZero() {
@@ -264,6 +598,16 @@ function remiseAZero() {
   mouches = [];
   for (const f of fusees) f.element.remove();
   fusees = [];
+  if (trou !== null) trou.element.remove();
+  trou = null;
+  tombe = false;
+  for (const b of bulles) b.element.remove();
+  bulles = [];
+  munitions = munitionsDepart;
+  vies = viesMax;
+  invincible = 0;
+  balle.classList.remove("clignote");
+  majVies();
   hauteur = hauteurDepart;
   compteur = 0;
   distance = 0;
@@ -271,6 +615,10 @@ function remiseAZero() {
   affichageScore.textContent = "Score : 0";
   majNuit();
   perdu = false;
+  enPause = false;
+  clearInterval(minuteurReprise);
+  minuteurReprise = null;
+  jeu.classList.remove("pause");
   message.textContent = "";
   pleure.style.display = "none";
   balle.style.bottom = hauteur + "px";
@@ -282,18 +630,142 @@ function recommencer() {
 }
 
 // bouton Restart : retour au menu de bienvenue
-document.getElementById("restart").addEventListener("click", function () {
-  this.blur();
+function retourAccueil() {
+  arreterAide();
   cancelAnimationFrame(idAnimation);
   remiseAZero();
   toucheAppuyee = false;
   commence = false;
   panneau.style.display = "none";
   boutonReglages.classList.remove("ouvert");
-  accueil.style.display = "block";
-});
+  montrerAccueil();
+}
+
+// --- Pistolet à bulles : à partir de 20 points, Z lance une bulle qui fait éclater un pique ---
+const tailleBulle = 16;
+const munitionsDepart = 5;
+const affichageMunitions = document.getElementById("munitions");
+let munitions = munitionsDepart;
+let bulles = [];
+
+function majMunitions() {
+  affichageMunitions.textContent = "🫧 Z : " + munitions;
+  affichageMunitions.style.display = score >= 20 ? "block" : "none";
+}
+
+function tirer() {
+  if (!commence || perdu || enPause || trou !== null) return;
+  if (score < 20 || munitions <= 0) return;
+  munitions = munitions - 1;
+  majMunitions();
+  const element = document.createElement("div");
+  element.className = "bulle";
+  element.textContent = "🫧";
+  const y = hauteur + tailleBalle / 2 - tailleBulle / 2;
+  element.style.bottom = y + "px";
+  jeu.appendChild(element);
+  bulles.push({ element: element, x: balleX + tailleBalle, y: y });
+}
+
+function bulleTouche(bulle, o) {
+  const memeX = bulle.x + tailleBulle > o.x && bulle.x < o.x + tailleObstacle.largeur;
+  // hauteur occupée par l'obstacle (en bas ou en haut)
+  const bas = o.enHaut ? hauteurJeu - o.hauteur : 0;
+  const haut = o.enHaut ? hauteurJeu : o.hauteur;
+  const memeY = bulle.y + tailleBulle > bas && bulle.y < haut;
+  return memeX && memeY;
+}
+
+function majBulles() {
+  bulles = bulles.filter(function (b) {
+    b.x = b.x + 10;
+    b.element.style.left = b.x + "px";
+    let touchee = false;
+    for (const o of obstacles) {
+      if (!o.detruit && bulleTouche(b, o)) {
+        // l'obstacle éclate : +1 point
+        o.detruit = true;
+        o.element.remove();
+        touchee = true;
+        score = score + 1;
+        affichageScore.textContent = "Score : " + score;
+        majNuit();
+        break;
+      }
+    }
+    if (touchee || b.x > largeurJeu) {
+      b.element.remove();
+      return false;
+    }
+    return true;
+  });
+  obstacles = obstacles.filter(function (o) {
+    return !o.detruit;
+  });
+}
+
+// --- Traînée derrière la balle ---
+function creerTrainee() {
+  const element = document.createElement("div");
+  element.className = "trainee";
+  element.style.background = choixCouleur.value;
+  element.style.left = balleX + tailleBalle / 2 - 7 + "px";
+  element.style.bottom = hauteur + tailleBalle / 2 - 7 + "px";
+  // quand l'animation est finie, on enlève le rond
+  element.addEventListener("animationend", function () {
+    element.remove();
+  });
+  jeu.insertBefore(element, balle);
+}
+
+// --- La fin du jeu : à 100 points, un trou arrive et la balle tombe dedans ---
+const largeurTrou = 90;
+let trou = null;
+let tombe = false;
+
+function lancerFinale() {
+  // on enlève tout ce qui pourrait gêner
+  for (const o of obstacles) o.element.remove();
+  obstacles = [];
+  for (const m of mouches) m.element.remove();
+  mouches = [];
+  for (const f of fusees) f.element.remove();
+  fusees = [];
+  message.textContent = "";
+  const element = document.createElement("div");
+  element.className = "trou";
+  jeu.appendChild(element);
+  trou = { element: element, x: largeurJeu };
+}
+
+function jouerFinale() {
+  trou.x = trou.x - 3;
+  trou.element.style.left = trou.x + "px";
+  if (!tombe) {
+    // la balle descend toute seule vers le sol
+    hauteur = Math.max(0, hauteur - 3);
+    if (trou.x <= balleX - 5) tombe = true;
+  } else {
+    // la balle tombe dans le trou
+    hauteur = hauteur - 5;
+  }
+  balle.style.bottom = hauteur + "px";
+
+  if (hauteur < -tailleBalle) {
+    perdu = true; // pour pouvoir rejouer avec Espace
+    message.textContent = "Bravo, tu as fini le jeu ! " + nomTouche(touches.monter) + " pour rejouer";
+    return;
+  }
+  idAnimation = requestAnimationFrame(jouer);
+}
 
 function jouer() {
+  if (score >= 100 && trou === null) lancerFinale();
+  if (trou !== null) {
+    jouerFinale();
+    return;
+  }
+
   if (toucheAppuyee) {
     hauteur = hauteur + 4; // la balle monte
   } else {
@@ -315,12 +787,15 @@ function jouer() {
   // un nouvel obstacle de temps en temps
   // la vitesse augmente peu à peu (maximum 8)
   compteur = compteur + 1;
+  if (compteur % 2 === 0) creerTrainee();
   const vitesse = Math.min(3 + compteur / 600, 8);
   distance = distance + vitesse;
   if (distance >= 270) {
     creerObstacle();
     distance = 0;
   }
+
+  majBulles();
 
   // les obstacles avancent vers la gauche
   for (const o of obstacles) {
@@ -390,8 +865,34 @@ function jouer() {
     return true;
   });
 
+  // nouveau record : on le montre et on le garde
+  if (score > meilleur) {
+    meilleur = score;
+    affichageMeilleur.textContent = "Meilleur : " + meilleur;
+    localStorage.setItem("meilleurScore", meilleur);
+  }
+
+  // juste après une vie perdue, on est protégé un moment
+  if (invincible > 0) {
+    invincible = invincible - 1;
+    perdu = false;
+    if (invincible === 0) balle.classList.remove("clignote");
+  } else if (perdu && vies > 1) {
+    // il reste des vies : on en perd une et on continue au milieu
+    vies = vies - 1;
+    majVies();
+    perdu = false;
+    hauteur = hauteurDepart;
+    balle.style.bottom = hauteur + "px";
+    invincible = 90;
+    balle.classList.add("clignote");
+  } else if (perdu) {
+    vies = 0;
+    majVies();
+  }
+
   if (perdu) {
-    message.textContent = "Perdu ! Appuie sur Espace pour rejouer";
+    message.textContent = "Perdu ! Appuie sur " + nomTouche(touches.monter) + " pour rejouer";
     pleure.style.display = "block";
     return;
   }
