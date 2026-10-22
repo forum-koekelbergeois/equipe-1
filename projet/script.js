@@ -41,6 +41,15 @@ const affichageMeilleur = document.getElementById("meilleur");
 let meilleur = Number(localStorage.getItem("meilleurScore")) || 0;
 affichageMeilleur.textContent = "Meilleur : " + meilleur;
 
+// bouton pour remettre le meilleur score à 0 (on demande avant)
+document.getElementById("resetMeilleur").addEventListener("click", function () {
+  this.blur();
+  if (!confirm("Remettre le meilleur score à 0 ?")) return;
+  meilleur = 0;
+  localStorage.setItem("meilleurScore", 0);
+  affichageMeilleur.textContent = "Meilleur : 0";
+});
+
 const accueil = document.getElementById("accueil");
 const choixCouleur = document.getElementById("couleur");
 
@@ -144,9 +153,203 @@ majNomsTouches();
 const choixApparence = document.getElementById("apparence");
 
 choixApparence.addEventListener("change", function () {
-  balle.textContent = choixApparence.value;
-  balle.classList.toggle("emoji", choixApparence.value !== "");
+  appliquerSkin(choixApparence.value);
+  skinChoisi = choixApparence.value;
+  localStorage.setItem("skin", skinChoisi);
   choixApparence.blur();
+});
+
+// --- Boutique : les skins se débloquent avec le meilleur score ---
+const skins = [
+  { emoji: "", nom: "Balle", score: 0 },
+  { emoji: "🦆", nom: "Canard", score: 0 },
+  { emoji: "🐱", nom: "Chat", score: 5 },
+  { emoji: "🐸", nom: "Grenouille", score: 10 },
+  { emoji: "🦊", nom: "Renard", score: 20 },
+  { emoji: "🐼", nom: "Panda", score: 30 },
+  { emoji: "🦄", nom: "Licorne", score: 40 },
+  { emoji: "👻", nom: "Fantôme", score: 50 },
+  { emoji: "🤖", nom: "Robot", score: 60 },
+  { emoji: "👽", nom: "Alien", score: 75 },
+  { emoji: "🐲", nom: "Dragon", score: 90 },
+  { emoji: "👑", nom: "Couronne", score: 100 },
+  { emoji: "🐧", nom: "Pingouin", score: 150 },
+  { emoji: "🦁", nom: "Lion", score: 200 },
+  { emoji: "🦖", nom: "T-Rex", score: 250 },
+  { emoji: "🐙", nom: "Pieuvre", score: 300 },
+  { emoji: "💎", nom: "Diamant", score: 400 },
+  { emoji: "🏆", nom: "Trophée", score: 500 },
+];
+let skinChoisi = localStorage.getItem("skin") || "";
+appliquerSkin(skinChoisi); // on remet le skin choisi la dernière fois
+
+function appliquerSkin(emoji) {
+  balle.textContent = "";
+  if (emoji === "🐲") {
+    // le dragon regarde vers la gauche : on le retourne pour qu'il regarde vers l'avant
+    const retourne = document.createElement("span");
+    retourne.className = "retourne";
+    retourne.textContent = emoji;
+    balle.appendChild(retourne);
+  } else {
+    balle.textContent = emoji;
+  }
+  balle.classList.toggle("emoji", emoji !== "");
+}
+
+// styles d'ailes (comme les skins, ils se débloquent avec le meilleur score)
+const ailes = [
+  { classe: "", emoji: "🪽", nom: "Blanches", score: 0 },
+  { classe: "ailes-or", emoji: "🌟", nom: "Dorées", score: 15 },
+  { classe: "ailes-papillon", emoji: "🦋", nom: "Papillon", score: 25 },
+  { classe: "ailes-noires", emoji: "🦇", nom: "Noires", score: 35 },
+  { classe: "ailes-dragon", emoji: "🐉", nom: "Dragon", score: 50 },
+  { classe: "ailes-ange", emoji: "😇", nom: "Ange", score: 60 },
+  { classe: "ailes-arc", emoji: "🌈", nom: "Arc-en-ciel", score: 70 },
+  { classe: "ailes-jetpack", emoji: "🚀", nom: "Jet pack", score: 80 },
+  { classe: "ailes-aucune", emoji: "🚫", nom: "Sans ailes", score: 0 },
+];
+let ailesChoisies = localStorage.getItem("ailes") || "";
+
+function appliquerAiles(classe) {
+  for (const a of ailes) {
+    if (a.classe !== "") balle.classList.remove(a.classe);
+  }
+  if (classe !== "") balle.classList.add(classe);
+}
+appliquerAiles(ailesChoisies);
+
+function dessinerAiles() {
+  const liste = document.getElementById("listeAiles");
+  liste.textContent = "";
+  for (const style of ailes) {
+    const bouton = document.createElement("button");
+    bouton.className = "skin";
+    const debloque = meilleur >= style.score;
+    bouton.textContent = style.emoji;
+    const petit = document.createElement("span");
+    petit.textContent = debloque ? style.nom : "🔒 " + style.score + " points";
+    if (debloque && style.classe === ailesChoisies) petit.textContent = "✅ Équipé";
+    bouton.appendChild(petit);
+    if (!debloque) bouton.classList.add("bloque");
+    if (style.classe === ailesChoisies) bouton.classList.add("choisi");
+    bouton.addEventListener("click", function () {
+      this.blur();
+      if (!debloque) return;
+      ailesChoisies = style.classe;
+      localStorage.setItem("ailes", ailesChoisies);
+      appliquerAiles(ailesChoisies);
+      dessinerAiles();
+    });
+    liste.appendChild(bouton);
+  }
+}
+
+// couleurs de la traînée ("" = la couleur de la balle, "arc" = multicolore)
+const couleursTrainee = [
+  { valeur: "", nom: "Comme la balle", score: 0 },
+  { valeur: "red", nom: "Rouge", score: 0 },
+  { valeur: "orange", nom: "Orange", score: 0 },
+  { valeur: "gold", nom: "Doré", score: 0 },
+  { valeur: "limegreen", nom: "Vert", score: 0 },
+  { valeur: "dodgerblue", nom: "Bleu", score: 0 },
+  { valeur: "deeppink", nom: "Rose", score: 0 },
+  { valeur: "purple", nom: "Violet", score: 0 },
+  { valeur: "white", nom: "Blanc", score: 0 },
+  { valeur: "arc", nom: "Multicolore", score: 30 },
+];
+let couleurTraineeChoisie = localStorage.getItem("trainee") || "";
+
+function dessinerTrainee() {
+  const liste = document.getElementById("listeTrainee");
+  liste.textContent = "";
+  for (const c of couleursTrainee) {
+    const bouton = document.createElement("button");
+    bouton.className = "skin";
+    const debloque = meilleur >= c.score;
+    bouton.textContent = c.valeur === "arc" ? "🌈" : c.valeur === "" ? "⚽" : "⬤";
+    if (c.valeur !== "" && c.valeur !== "arc") bouton.style.color = c.valeur;
+    const petit = document.createElement("span");
+    petit.textContent = debloque ? c.nom : "🔒 " + c.score + " points";
+    if (debloque && c.valeur === couleurTraineeChoisie) petit.textContent = "✅ Équipé";
+    bouton.appendChild(petit);
+    if (!debloque) bouton.classList.add("bloque");
+    if (c.valeur === couleurTraineeChoisie) bouton.classList.add("choisi");
+    bouton.addEventListener("click", function () {
+      this.blur();
+      if (!debloque) return;
+      couleurTraineeChoisie = c.valeur;
+      localStorage.setItem("trainee", couleurTraineeChoisie);
+      dessinerTrainee();
+    });
+    liste.appendChild(bouton);
+  }
+}
+
+// les onglets de la boutique : Skins, Ailes ou Traînée
+const ongletsBoutique = {
+  skins: [document.getElementById("tabSkins"), document.getElementById("listeSkins"), "grid"],
+  ailes: [document.getElementById("tabAiles"), document.getElementById("listeAiles"), "flex"],
+  trainee: [document.getElementById("tabTrainee"), document.getElementById("listeTrainee"), "grid"],
+};
+
+function montrerOngletBoutique(nom) {
+  for (const cle in ongletsBoutique) {
+    const actif = cle === nom;
+    ongletsBoutique[cle][0].classList.toggle("actif", actif);
+    ongletsBoutique[cle][1].style.display = actif ? ongletsBoutique[cle][2] : "none";
+  }
+}
+
+for (const cle in ongletsBoutique) {
+  ongletsBoutique[cle][0].addEventListener("click", function () {
+    this.blur();
+    montrerOngletBoutique(cle);
+  });
+}
+
+function dessinerBoutique() {
+  dessinerAiles();
+  dessinerTrainee();
+  const liste = document.getElementById("listeSkins");
+  liste.textContent = "";
+  document.getElementById("infoBoutique").textContent = "Ton meilleur score : " + meilleur;
+  for (const skin of skins) {
+    const bouton = document.createElement("button");
+    bouton.className = "skin";
+    const debloque = meilleur >= skin.score;
+    bouton.textContent = skin.emoji === "" ? "⚽" : skin.emoji;
+    const petit = document.createElement("span");
+    petit.textContent = debloque ? skin.nom : "🔒 " + skin.score + " points";
+    if (debloque && skin.emoji === skinChoisi) petit.textContent = "✅ Équipé";
+    bouton.appendChild(petit);
+    if (!debloque) bouton.classList.add("bloque");
+    if (skin.emoji === skinChoisi) bouton.classList.add("choisi");
+    bouton.addEventListener("click", function () {
+      this.blur();
+      if (!debloque) return;
+      skinChoisi = skin.emoji;
+      localStorage.setItem("skin", skinChoisi);
+      appliquerSkin(skinChoisi);
+      choixApparence.value = "";
+      dessinerBoutique();
+    });
+    liste.appendChild(bouton);
+  }
+}
+
+document.getElementById("boutonBoutique").addEventListener("click", function () {
+  this.blur();
+  menuPrincipal.style.display = "none";
+  document.getElementById("boutique").style.display = "block";
+  montrerOngletBoutique("skins");
+  dessinerBoutique();
+});
+
+document.getElementById("retourBoutique").addEventListener("click", function () {
+  this.blur();
+  document.getElementById("boutique").style.display = "none";
+  menuPrincipal.style.display = "block";
 });
 
 // --- Musique drôle (créée par le navigateur, sans fichier) ---
@@ -269,18 +472,21 @@ boutonAction.addEventListener("click", function () {
 const menuPrincipal = document.getElementById("menuPrincipal");
 const menuNiveaux = document.getElementById("niveaux");
 const affichageVies = document.getElementById("vies");
+let facteurVitesse = 1; // le niveau change la vitesse (1 = la plus rapide)
+let facteurPiques = 1; // en facile, les piques sont plus bas (plus petits)
 let viesMax = 3;
 let vies = 3;
 let invincible = 0; // images pendant lesquelles on ne peut pas perdre
 
 function majVies() {
-  affichageVies.textContent = "❤️".repeat(vies) + "🖤".repeat(viesMax - vies);
+  affichageVies.textContent = "❤️".repeat(vies) + "🖤".repeat(Math.max(0, viesMax - vies));
 }
 
 // l'accueil montre d'abord « Jouer », puis le choix du niveau
 function montrerAccueil() {
   menuPrincipal.style.display = "block";
   menuNiveaux.style.display = "none";
+  document.getElementById("boutique").style.display = "none";
   accueil.style.display = "block";
 }
 
@@ -294,6 +500,8 @@ for (const bouton of document.querySelectorAll(".niveau")) {
   bouton.addEventListener("click", function () {
     this.blur();
     viesMax = Number(this.dataset.vies);
+    facteurVitesse = Number(this.dataset.vitesse);
+    facteurPiques = Number(this.dataset.piques);
     accueil.style.display = "none";
     remiseAZero();
     montrerAide();
@@ -431,9 +639,12 @@ function creerObstacle() {
   // au hasard : obstacle en bas ou en haut
   const enHaut = Math.random() < 0.5;
   // taille au hasard entre 120 et 340 (les grands bloquent le milieu)
-  const hauteurObstacle = 120 + Math.random() * 220;
+  const hauteurObstacle = (120 + Math.random() * 220) * facteurPiques;
   element.style.height = hauteurObstacle + "px";
-  if (score >= 20) {
+  if (score >= 50) {
+    // à partir de 50 points, ce sont des piques futuristes (néons)
+    element.classList.add("neon");
+  } else if (score >= 20) {
     // à partir de 20 points, les piques deviennent des serpents
     element.classList.add("serpent");
     element.textContent = "🐍";
@@ -461,10 +672,13 @@ function creerObstacle() {
 const tailleFusee = { largeur: 40, hauteur: 24 };
 let fusees = [];
 
-function creerFusee() {
+function creerFusee(yImpose, xImpose) {
   const element = document.createElement("div");
   element.className = "fusee";
-  if (score >= 20) {
+  if (score >= 50) {
+    // à partir de 50 points, ce sont des missiles futuristes (dessinés en CSS)
+    element.classList.add("missile");
+  } else if (score >= 20) {
     // à partir de 20 points, les fusées deviennent des abeilles
     element.textContent = "🐝";
     element.classList.add("abeille");
@@ -474,10 +688,70 @@ function creerFusee() {
     element.style.filter = "hue-rotate(" + Math.floor(Math.random() * 360) + "deg)";
   }
   // hauteur au hasard
-  const y = 20 + Math.random() * (hauteurJeu - 80);
+  // hauteur au hasard, sauf si c'est le boss qui tire
+  const y = yImpose !== undefined ? yImpose : 20 + Math.random() * (hauteurJeu - 80);
+  const x = xImpose !== undefined ? xImpose : largeurJeu;
   element.style.bottom = y + "px";
   jeu.appendChild(element);
-  fusees.push({ element: element, x: largeurJeu, y: y });
+  fusees.push({ element: element, x: x, y: y });
+}
+
+// --- Le boss : arrive à 200 points, 500 points de vie, une bulle lui enlève 20 ---
+const tailleBoss = 90;
+const pvBossMax = 500;
+const degatBulle = 20;
+let boss = null;
+let bossVaincu = false;
+
+function creerBoss() {
+  const element = document.createElement("div");
+  element.className = "boss";
+  element.textContent = "👾";
+  const barre = document.createElement("div");
+  barre.className = "barreBoss";
+  const rempli = document.createElement("div");
+  barre.appendChild(rempli);
+  element.appendChild(barre);
+  jeu.appendChild(element);
+  boss = { element: element, rempli: rempli, x: largeurJeu, y: 205, t: 0, pv: pvBossMax, tir: 0 };
+  munitions = munitionsDepart;
+  majMunitions();
+  message.textContent = "BOSS ! Tire avec " + nomTouche(touches.tirer);
+  setTimeout(function () {
+    if (boss !== null && !perdu) message.textContent = "";
+  }, 2500);
+}
+
+function majBoss() {
+  // il arrive de la droite, puis monte et descend en tirant des missiles
+  if (boss.x > 580) boss.x = boss.x - 2;
+  boss.t = boss.t + 0.03;
+  boss.y = 205 + Math.sin(boss.t) * 150;
+  boss.tir = boss.tir + 1;
+  if (boss.tir % 110 === 0) creerFusee(boss.y + 33, boss.x);
+  boss.element.style.left = boss.x + "px";
+  boss.element.style.bottom = boss.y + "px";
+  // toucher le boss fait perdre
+  const touche =
+    balleX < boss.x + tailleBoss &&
+    balleX + tailleBalle > boss.x &&
+    hauteur < boss.y + tailleBoss &&
+    hauteur + tailleBalle > boss.y;
+  if (touche) perdu = true;
+}
+
+function bossVaincuFin() {
+  boss.element.remove();
+  boss = null;
+  bossVaincu = true;
+  munitions = munitionsDepart;
+  score = score + 10;
+  affichageScore.textContent = "Score : " + score;
+  majNuit();
+  message.textContent = "Boss vaincu ! +10 points";
+  setTimeout(function () {
+    if (!perdu) message.textContent = "";
+  }, 2500);
 }
 
 // --- Pièce bonus (ancienne mouche) : l'attraper donne 3 points ---
@@ -491,6 +765,18 @@ function creerMouche() {
   jeu.appendChild(element);
   const y = 60 + Math.random() * (hauteurJeu - 160);
   mouches.push({ element: element, x: largeurJeu, y: y, y0: y, t: 0 });
+}
+
+// --- Cœur bonus (dans le désert) : l'attraper donne une vie en plus ---
+let coeurs = [];
+
+function creerCoeur() {
+  const element = document.createElement("div");
+  element.className = "coeur";
+  element.textContent = "❤️";
+  jeu.appendChild(element);
+  const y = 60 + Math.random() * (hauteurJeu - 160);
+  coeurs.push({ element: element, x: largeurJeu, y: y, y0: y, t: 0 });
 }
 
 function fuseeTouche(fusee) {
@@ -596,8 +882,13 @@ function remiseAZero() {
   obstacles = [];
   for (const m of mouches) m.element.remove();
   mouches = [];
+  for (const c of coeurs) c.element.remove();
+  coeurs = [];
   for (const f of fusees) f.element.remove();
   fusees = [];
+  if (boss !== null) boss.element.remove();
+  boss = null;
+  bossVaincu = false;
   if (trou !== null) trou.element.remove();
   trou = null;
   tombe = false;
@@ -621,6 +912,8 @@ function remiseAZero() {
   jeu.classList.remove("pause");
   message.textContent = "";
   pleure.style.display = "none";
+  boutonRejouer.style.display = "none";
+  boutonMenu.style.display = "none";
   balle.style.bottom = hauteur + "px";
 }
 
@@ -629,7 +922,21 @@ function recommencer() {
   jouer();
 }
 
-// bouton Restart : retour au menu de bienvenue
+// bouton Restart affiché quand on a perdu : on rejoue tout de suite
+const boutonRejouer = document.getElementById("boutonRejouer");
+boutonRejouer.addEventListener("click", function () {
+  this.blur();
+  recommencer();
+});
+
+// bouton Menu affiché quand on a perdu : retour au menu de bienvenue
+const boutonMenu = document.getElementById("boutonMenu");
+boutonMenu.addEventListener("click", function () {
+  this.blur();
+  retourAccueil();
+});
+
+// retour au menu de bienvenue (touche Restart)
 function retourAccueil() {
   arreterAide();
   cancelAnimationFrame(idAnimation);
@@ -649,14 +956,18 @@ let munitions = munitionsDepart;
 let bulles = [];
 
 function majMunitions() {
-  affichageMunitions.textContent = "🫧 Z : " + munitions;
+  // pendant le boss, les bulles sont infinies
+  affichageMunitions.textContent = "🫧 Z : " + (boss !== null ? "∞" : munitions);
   affichageMunitions.style.display = score >= 20 ? "block" : "none";
 }
 
 function tirer() {
   if (!commence || perdu || enPause || trou !== null) return;
-  if (score < 20 || munitions <= 0) return;
-  munitions = munitions - 1;
+  if (score < 20) return;
+  if (boss === null) {
+    if (munitions <= 0) return;
+    munitions = munitions - 1;
+  }
   majMunitions();
   const element = document.createElement("div");
   element.className = "bulle";
@@ -681,7 +992,17 @@ function majBulles() {
     b.x = b.x + 10;
     b.element.style.left = b.x + "px";
     let touchee = false;
+    // la bulle touche le boss : -20 points de vie
+    if (boss !== null &&
+        b.x + tailleBulle > boss.x && b.x < boss.x + tailleBoss &&
+        b.y + tailleBulle > boss.y && b.y < boss.y + tailleBoss) {
+      boss.pv = boss.pv - degatBulle;
+      boss.rempli.style.width = Math.max(0, boss.pv) / pvBossMax * 100 + "%";
+      touchee = true;
+      if (boss.pv <= 0) bossVaincuFin();
+    }
     for (const o of obstacles) {
+      if (touchee) break;
       if (!o.detruit && bulleTouche(b, o)) {
         // l'obstacle éclate : +1 point
         o.detruit = true;
@@ -708,8 +1029,15 @@ function majBulles() {
 function creerTrainee() {
   const element = document.createElement("div");
   element.className = "trainee";
-  element.style.background = choixCouleur.value;
-  element.style.left = balleX + tailleBalle / 2 - 7 + "px";
+  if (couleurTraineeChoisie === "arc") {
+    // multicolore : la couleur change à chaque rond
+    element.style.background = "hsl(" + ((compteur * 12) % 360) + ", 100%, 55%)";
+  } else {
+    element.style.background = couleurTraineeChoisie || choixCouleur.value;
+  }
+  // avec le jet pack, la traînée sort de la flamme (derrière la balle)
+  const decalage = balle.classList.contains("ailes-jetpack") ? -30 : 0;
+  element.style.left = balleX + tailleBalle / 2 - 7 + decalage + "px";
   element.style.bottom = hauteur + tailleBalle / 2 - 7 + "px";
   // quand l'animation est finie, on enlève le rond
   element.addEventListener("animationend", function () {
@@ -718,7 +1046,7 @@ function creerTrainee() {
   jeu.insertBefore(element, balle);
 }
 
-// --- La fin du jeu : à 100 points, un trou arrive et la balle tombe dedans ---
+// --- La fin du jeu : à 500 points, un trou arrive et la balle tombe dedans ---
 const largeurTrou = 90;
 let trou = null;
 let tombe = false;
@@ -760,7 +1088,7 @@ function jouerFinale() {
 }
 
 function jouer() {
-  if (score >= 100 && trou === null) lancerFinale();
+  if (score >= 500 && trou === null) lancerFinale();
   if (trou !== null) {
     jouerFinale();
     return;
@@ -788,12 +1116,17 @@ function jouer() {
   // la vitesse augmente peu à peu (maximum 8)
   compteur = compteur + 1;
   if (compteur % 2 === 0) creerTrainee();
-  const vitesse = Math.min(3 + compteur / 600, 8);
+  const vitesse = Math.min(3 + compteur / 600, 8) * facteurVitesse;
   distance = distance + vitesse;
   if (distance >= 270) {
-    creerObstacle();
+    // pendant le boss, il n'y a plus de nouveaux piques
+    if (boss === null) creerObstacle();
     distance = 0;
   }
+
+  // à 200 points, le boss arrive (une seule fois par partie)
+  if (score >= 200 && boss === null && !bossVaincu) creerBoss();
+  if (boss !== null) majBoss();
 
   majBulles();
 
@@ -813,7 +1146,7 @@ function jouer() {
   }
 
   // de temps en temps, une fusée apparaît (après un petit moment)
-  if (compteur > 300 && Math.random() < 0.005) creerFusee();
+  if (compteur > 300 && boss === null && Math.random() < 0.005) creerFusee();
 
   // les fusées vont plus vite que les obstacles
   for (const f of fusees) {
@@ -830,11 +1163,12 @@ function jouer() {
   });
 
   // une mouche apparaît de temps en temps (une seule à la fois)
-  if (compteur > 150 && mouches.length === 0 && Math.random() < 0.004) creerMouche();
+  // (seulement quand on est loin des piques, pour ne pas apparaître dedans)
+  if (compteur > 150 && mouches.length === 0 && distance > 90 && distance < 180 && Math.random() < 0.01) creerMouche();
 
   // la mouche zigzague et donne des points si on l'attrape
   mouches = mouches.filter(function (m) {
-    m.x = m.x - (vitesse + 1);
+    m.x = m.x - vitesse; // même vitesse que les piques : elle reste entre deux piques
     m.t = m.t + 0.1;
     m.y = m.y0 + Math.sin(m.t) * 30;
     m.element.style.left = m.x + "px";
@@ -851,6 +1185,32 @@ function jouer() {
     }
     if (attrapee || m.x < -tailleMouche) {
       m.element.remove();
+      return false;
+    }
+    return true;
+  });
+
+  // dans le désert, un cœur apparaît de temps en temps (un seul à la fois)
+  if (score >= 20 && score < 50 && coeurs.length === 0 && distance > 90 && distance < 180 && Math.random() < 0.004) creerCoeur();
+
+  // le cœur zigzague et donne une vie si on l'attrape
+  coeurs = coeurs.filter(function (c) {
+    c.x = c.x - vitesse;
+    c.t = c.t + 0.1;
+    c.y = c.y0 + Math.sin(c.t) * 30;
+    c.element.style.left = c.x + "px";
+    c.element.style.bottom = c.y + "px";
+    const attrape =
+      balleX < c.x + tailleMouche &&
+      balleX + tailleBalle > c.x &&
+      hauteur < c.y + tailleMouche &&
+      hauteur + tailleBalle > c.y;
+    if (attrape) {
+      vies = vies + 1;
+      majVies();
+    }
+    if (attrape || c.x < -tailleMouche) {
+      c.element.remove();
       return false;
     }
     return true;
@@ -894,6 +1254,8 @@ function jouer() {
   if (perdu) {
     message.textContent = "Perdu ! Appuie sur " + nomTouche(touches.monter) + " pour rejouer";
     pleure.style.display = "block";
+    boutonRejouer.style.display = "block";
+    boutonMenu.style.display = "block";
     return;
   }
   idAnimation = requestAnimationFrame(jouer);

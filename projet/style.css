@@ -148,6 +148,32 @@ body {
   z-index: 5;
 }
 
+#boutonRejouer,
+#boutonMenu {
+  display: none;
+  position: absolute;
+  top: 360px;
+  z-index: 6;
+  padding: 10px 30px;
+  font-size: 22px;
+  font-weight: bold;
+  color: white;
+  background: #1e88e5;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+#boutonRejouer {
+  left: 200px;
+  background: #2e9e3e;
+}
+
+#boutonMenu {
+  left: 380px;
+  background: #f57c00;
+}
+
 #restart {
   position: absolute;
   top: 8px;
@@ -289,6 +315,7 @@ body {
   to { transform: rotate(-25deg); }
 }
 
+.coeur,
 .mouche {
   position: absolute;
   width: 26px;
@@ -429,6 +456,19 @@ body {
 
 .obstacle.haut.serpent {
   align-items: flex-end;
+}
+
+/* piques futuristes (à partir de 50 points) : néons cyan et rose */
+.obstacle.neon {
+  background:
+    repeating-linear-gradient(#ffffff 0 3px, transparent 3px 22px),
+    linear-gradient(90deg, #00e5ff, #7c4dff 50%, #ff00ff);
+  animation: neon-brille 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes neon-brille {
+  from { filter: brightness(0.9) saturate(1.2); }
+  to { filter: brightness(1.5) saturate(1.6); }
 }
 
 /* bouton Paramètres (bleu), sous le bouton Jouer */
@@ -684,6 +724,297 @@ body {
   display: none;
 }
 
+/* menu principal : trois gros boutons de la même taille */
+#menuPrincipal h2 {
+  margin-top: 90px;
+  margin-bottom: 25px;
+}
+
+#menuPrincipal button {
+  display: block;
+  width: 260px;
+  margin: 16px auto 0;
+  box-sizing: border-box;
+  border-radius: 14px;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 0 12px white;
+  transition: transform 0.15s;
+}
+
+#menuPrincipal button:hover {
+  transform: scale(1.08);
+}
+
+#menuPrincipal #jouer {
+  font-size: 30px;
+  padding: 14px 0;
+}
+
+/* emoji retourné (le dragon regarde vers l'avant) */
+#balle .retourne {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+
+/* styles d'ailes de la boutique */
+#balle.ailes-or::before,
+#balle.ailes-or::after {
+  background: linear-gradient(#fff59d, #ffc107);
+  border-color: #ff8f00;
+  box-shadow: 0 0 8px #ffd600;
+}
+
+#balle.ailes-noires::before,
+#balle.ailes-noires::after {
+  background: #212121;
+  border-color: #000;
+  border-radius: 80% 20% 80% 20%;
+}
+
+#balle.ailes-arc::before,
+#balle.ailes-arc::after {
+  background: linear-gradient(90deg, red, orange, yellow, limegreen, dodgerblue, violet);
+  border-color: white;
+}
+
+/* dragon : ailes vertes en pointe */
+#balle.ailes-dragon::before,
+#balle.ailes-dragon::after {
+  width: 30px;
+  height: 16px;
+  background: #43a047;
+  border-color: #1b5e20;
+}
+
+#balle.ailes-dragon::before {
+  left: -26px;
+  border-radius: 100% 0 100% 0;
+}
+
+#balle.ailes-dragon::after {
+  right: -26px;
+  border-radius: 0 100% 0 100%;
+}
+
+/* papillon : grandes ailes roses et violettes */
+#balle.ailes-papillon::before,
+#balle.ailes-papillon::after {
+  width: 28px;
+  height: 26px;
+  top: -6px;
+  background: radial-gradient(circle at 50% 60%, #f48fb1, #ba68c8);
+  border-color: #6a1b9a;
+}
+
+#balle.ailes-papillon::before {
+  left: -24px;
+}
+
+#balle.ailes-papillon::after {
+  right: -24px;
+}
+
+/* ange : très longues ailes blanches qui brillent */
+#balle.ailes-ange::before,
+#balle.ailes-ange::after {
+  width: 42px;
+  height: 12px;
+  top: 4px;
+  border-color: #ffd600;
+  box-shadow: 0 0 10px #fff59d;
+}
+
+#balle.ailes-ange::before {
+  left: -38px;
+}
+
+#balle.ailes-ange::after {
+  right: -38px;
+}
+
+/* jet pack : un réservoir gris dans le dos, avec une flamme qui vacille */
+#balle.ailes-jetpack::before {
+  left: -14px;
+  top: 5px;
+  width: 12px;
+  height: 20px;
+  background: linear-gradient(90deg, #9e9e9e, #e0e0e0, #757575);
+  border: 2px solid #424242;
+  border-radius: 6px;
+  animation: none;
+}
+
+#balle.ailes-jetpack::after {
+  right: auto;
+  left: -34px;
+  top: 8px;
+  width: 20px;
+  height: 14px;
+  background: linear-gradient(90deg, rgba(255, 235, 59, 0), #ff9800, #ff5722);
+  border: none;
+  border-radius: 50% 0 0 50%;
+  transform-origin: right center;
+  animation: flamme 0.12s ease-in-out infinite alternate;
+}
+
+@keyframes flamme {
+  from { transform: scaleX(0.6); }
+  to { transform: scaleX(1.1); }
+}
+
+#balle.ailes-aucune::before,
+#balle.ailes-aucune::after {
+  display: none;
+}
+
+#listeAiles {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  margin-top: 10px;
+}
+
+#listeAiles .skin {
+  width: 72px;
+  height: 52px;
+  padding: 0;
+  font-size: 18px;
+}
+
+#listeAiles .skin span {
+  font-size: 10px;
+}
+
+/* onglets de la boutique : un seul est visible à la fois */
+#ongletsBoutique {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+#ongletsBoutique button {
+  padding: 7px 22px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #4a148c;
+  background: #e0e0e0;
+  border: 3px solid #ffd600;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+#ongletsBoutique button.actif {
+  background: #ffd600;
+}
+
+#listeAiles,
+#listeTrainee {
+  display: none; /* le bon onglet est affiché par le script */
+}
+
+#listeTrainee {
+  grid-template-columns: repeat(5, 100px) !important;
+  width: 520px !important;
+}
+
+#listeTrainee .skin {
+  height: 70px;
+}
+
+/* boutique de skins */
+#boutonBoutique,
+#retourBoutique {
+  display: block;
+  margin: 18px auto 0;
+  background: #e91e63;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 10px 30px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+#boutique {
+  display: none;
+  position: relative;
+}
+
+#accueil #boutique h2 {
+  margin-top: 15px;
+  margin-bottom: 2px;
+  font-size: 40px;
+}
+
+#infoBoutique {
+  margin: 0 0 10px;
+  color: white;
+  font-weight: bold;
+}
+
+#listeSkins,
+#listeTrainee {
+  display: grid;
+  grid-template-columns: repeat(6, 90px);
+  gap: 8px;
+  justify-content: center;
+  width: 580px;
+  margin: 0 auto;
+  padding: 14px;
+  box-sizing: content-box;
+  background: rgba(74, 20, 140, 0.55);
+  border: 3px solid #ffd600;
+  border-radius: 18px;
+  box-shadow: 0 0 20px #ffd600;
+}
+
+#retourBoutique {
+  margin-top: 10px;
+  padding: 6px 30px;
+}
+
+.skin {
+  padding: 0;
+  height: 70px;
+  background: linear-gradient(#ffffff, #ffe082);
+  border: 3px solid #ffd600;
+  border-radius: 14px;
+  font-size: 32px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s;
+}
+
+.skin span {
+  display: block;
+  font-family: "Comic Sans MS", "Chalkboard SE", "Bradley Hand", cursive;
+  font-size: 12px;
+  font-weight: bold;
+  color: #4a148c;
+}
+
+.skin:hover {
+  transform: scale(1.1) rotate(-3deg);
+}
+
+.skin.choisi {
+  background: linear-gradient(#e8f5e9, #a5d6a7);
+  border-color: #2e9e3e;
+  box-shadow: 0 0 14px #69f0ae;
+}
+
+.skin.bloque {
+  background: #bdbdbd;
+  border-color: #757575;
+  filter: grayscale(1);
+  cursor: not-allowed;
+}
+
+.skin.bloque:hover {
+  transform: none;
+}
+
 .niveau {
   display: block;
   position: relative;
@@ -819,6 +1150,68 @@ body.plein #jeu {
 /* l'abeille vole droit (pas de rotation comme la fusée) */
 .fusee.abeille {
   transform: none;
+}
+
+/* le boss (à 200 points) avec sa barre de vie */
+.boss {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  font-size: 80px;
+  line-height: 90px;
+  text-align: center;
+  z-index: 3;
+  filter: drop-shadow(0 0 10px #ff1744);
+}
+
+.barreBoss {
+  position: absolute;
+  top: -14px;
+  left: 0;
+  width: 90px;
+  height: 8px;
+  background: #424242;
+  border: 2px solid white;
+  border-radius: 6px;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.barreBoss div {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(#ff5252, #d50000);
+}
+
+/* missiles futuristes (à partir de 50 points) : capsule néon qui va vers la gauche */
+.fusee.missile {
+  transform: none;
+}
+
+.fusee.missile::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 28px;
+  height: 12px;
+  background: linear-gradient(90deg, #ffffff, #00e5ff 30%, #ff00ff);
+  border-radius: 50% 8px 8px 50%;
+  box-shadow: 0 0 10px #00e5ff, 0 0 6px #ff00ff;
+}
+
+/* flamme néon derrière le missile */
+.fusee.missile::after {
+  content: "";
+  position: absolute;
+  left: 28px;
+  top: 9px;
+  width: 12px;
+  height: 6px;
+  background: linear-gradient(90deg, #ff00ff, rgba(255, 0, 255, 0));
+  border-radius: 0 50% 50% 0;
+  animation: flamme 0.1s ease-in-out infinite alternate;
+  transform-origin: left center;
 }
 
 /* en pause : tout s'arrête (voitures, cactus, nuages, ville) */
