@@ -2,8 +2,10 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Jeu de la balle</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="mobile.css">
 </head>
 <body>
   <h1>Jeu de la balle</h1>
@@ -140,6 +142,16 @@
       <button id="fermer">Fermer</button>
     </div>
   </div>
+  <div id="commandesTactiles">
+    <div id="petitesCommandes">
+      <button class="commande" data-action="tirer">Bulles 🫧</button>
+      <button class="commande" data-action="pause">Pause</button>
+      <button class="commande" data-action="pleinEcran">Plein écran</button>
+      <button class="commande" data-action="restart">Restart</button>
+    </div>
+    <button class="commande monter" data-action="monter">Monter</button>
+  </div>
   <script src="script.js"></script>
+  <script src="mobile.js"></script>
 </body>
 </html>

@@ -589,7 +589,7 @@ function basculerPause() {
 
 // --- Plein écran avec la touche F ---
 function majPleinEcran() {
-  const plein = document.fullscreenElement !== null;
+  const plein = Boolean(document.fullscreenElement);
   document.body.classList.toggle("plein", plein);
   // on agrandit le jeu pour remplir l'écran
   const echelle = Math.min(window.innerWidth / largeurJeu, window.innerHeight / hauteurJeu);
@@ -597,6 +597,7 @@ function majPleinEcran() {
 }
 
 function basculerPleinEcran() {
+  if (!document.fullscreenEnabled) return;
   if (document.fullscreenElement === null) {
     document.documentElement.requestFullscreen();
   } else {

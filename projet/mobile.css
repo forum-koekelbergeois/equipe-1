@@ -1,0 +1,123 @@
+/* ===== Version mobile (ajout de l'animateur) ===== */
+
+/* le jeu est réduit pour tenir dans l'écran (la taille est calculée par mobile.js) */
+body:not(.plein) #jeu {
+  zoom: var(--echelleMobile, 1);
+}
+
+/* petits écrans : titre et marges plus petits pour laisser la place au jeu */
+@media (max-width: 760px), (max-height: 640px) {
+  body > h1 {
+    font-size: 22px;
+    margin: 6px 0;
+  }
+
+  #jeu {
+    margin: 0 auto;
+  }
+}
+
+/* sur téléphone, les boutons ne restent pas "grossis" après un appui */
+@media (hover: none) {
+  #menuPrincipal button:hover,
+  .niveau:hover,
+  .skin:hover {
+    transform: none;
+  }
+}
+
+/* commandes tactiles : cachées, sauf sur les écrans tactiles */
+#commandesTactiles {
+  display: none;
+}
+
+@media (any-pointer: coarse) {
+  #commandesTactiles {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none; /* on peut toucher le jeu entre les boutons */
+  }
+
+  #petitesCommandes {
+    position: absolute;
+    display: grid;
+    gap: 8px;
+  }
+
+  .commande {
+    pointer-events: auto;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background: #1e88e5;
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .commande.monter {
+    position: absolute;
+    font-size: 22px;
+    background: #2e9e3e;
+  }
+
+  .commande:active,
+  .commande.appuye {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+    filter: brightness(0.85);
+  }
+
+  /* en plein écran, le jeu laisse aussi la place aux boutons */
+  body.plein #jeu {
+    transform: translate(-50%, -50%) scale(var(--echelleMobile, var(--echelle)));
+  }
+}
+
+/* portrait : les boutons en bas (bande de 130px) */
+@media (any-pointer: coarse) and (orientation: portrait) {
+  #petitesCommandes {
+    left: 8px;
+    bottom: 8px;
+    width: calc(60% - 12px);
+    height: 114px;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .commande.monter {
+    right: 8px;
+    bottom: 8px;
+    width: calc(40% - 12px);
+    height: 114px;
+  }
+
+  body.plein #jeu {
+    top: calc(50% - 65px);
+  }
+}
+
+/* paysage : Bulles, Pause... à gauche et Monter à droite (bandes de 130px) */
+@media (any-pointer: coarse) and (orientation: landscape) {
+  #petitesCommandes {
+    left: 8px;
+    top: 8px;
+    bottom: 8px;
+    width: 114px;
+    grid-template-columns: 1fr;
+  }
+
+  .commande.monter {
+    right: 8px;
+    top: 8px;
+    bottom: 8px;
+    width: 114px;
+  }
+}
